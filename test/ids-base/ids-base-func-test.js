@@ -35,6 +35,11 @@ describe('IdsBase Tests', () => {
     elem.render();
 
     expect(elem.shadowRoot.querySelector('style').textContent).toEqual(expectedStyleContent);
+
+    // add coverage where there is pre-formatted styles
+    elem.cssStyles = expectedStyleContent;
+    elem.render();
+    expect(elem.shadowRoot.querySelector('style').textContent).toEqual(expectedStyleContent);
   });
 
   it('detaches an invalid event name without affecting existing events', () => {
