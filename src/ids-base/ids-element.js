@@ -104,15 +104,9 @@ class IdsElement extends HTMLElement {
 
     // Give implementing-component an opportunity to react to
     // new render and replacement of container node
-    // This requires to be done on the next tick/interval,
-    // so that mutation/resize observers that may bind
-    // events doesn't interfere and get called *after* the rendered()
-    // logic when we want to access the new shadowDom
 
     // @ts-ignore
-    if (this.rendered) {
-      setTimeout(() => { this.rendered?.(); }, 0);
-    }
+    this.rendered?.();
 
     return this;
   }

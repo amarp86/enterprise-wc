@@ -36,6 +36,10 @@
     margin-left: 16px;
     margin-right: 16px;
 
+    &.clickable {
+      cursor: pointer;
+    }
+
     &:first-child {
       text-align: left;
       margin-left: 0;
@@ -70,6 +74,10 @@
     position: relative;
     text-align: center;
     text-decoration: none;
+
+    &.clickable {
+      cursor: pointer;
+    }
 
     .step-node {
       position: relative;

@@ -6,6 +6,7 @@ import {
   mix
 } from '../ids-base/ids-element';
 import { IdsEventsMixin } from '../ids-base/ids-events-mixin';
+import { IdsStringUtils } from '../ids-base/ids-string-utils';
 import IdsWizardStep from './ids-wizard-step';
 // @ts-ignore
 import styles from './ids-wizard.scss';
@@ -24,7 +25,7 @@ class IdsWizard extends mix(IdsElement).with(IdsEventsMixin) {
 
   shouldUpdateCallbacks = true;
 
-  stepObserver = new MutationObserver((mutations, observer) => {
+  stepObserver = new MutationObserver((mutations) => {
     for (const { type } of mutations) {
       // @ts-ignore
       if (type === 'childList') {
@@ -39,7 +40,19 @@ class IdsWizard extends mix(IdsElement).with(IdsEventsMixin) {
    * @returns {Array} The properties in an array
    */
   static get properties() {
-    return ['step-number'];
+    return ['step-number', 'clickable'];
+  }
+
+  isStepClickable(stepNumber) {
+    const stepEl = this.children[stepNumber - 1];
+
+    return (
+      (this.stepNumber !== stepNumber)
+      && (
+        (this.clickable && (stepEl.getAttribute('clickable') !== 'false'))
+        || IdsStringUtils.stringToBool(stepEl.getAttribute('clickable'))
+      )
+    );
   }
 
   /**
@@ -59,8 +72,8 @@ class IdsWizard extends mix(IdsElement).with(IdsEventsMixin) {
     for (const [i, stepEl] of [...this.children].entries()) {
       const isCurrentStep = stepIndex === i;
       const isVisitedStep = i <= stepIndex;
-      const isClickable = stepEl.getAttribute('clickable');
-      const aHrefAttrib = isClickable ? ' href="#"' : '';
+
+      const isClickable = this.isStepClickable(i + 1);
 
       // --------------------- //
       // construct bar steps   //
@@ -78,7 +91,7 @@ class IdsWizard extends mix(IdsElement).with(IdsEventsMixin) {
       );
 
       stepsBarInnerHtml += (
-        `<a class="${markerClassName}"${aHrefAttrib} step-number=${i + 1}>
+        `<a class="${markerClassName}" step-number=${i + 1}>
           <div class="step-node">
             <svg viewBox="0 0 24 24">
               <circle cx="12" cy="12" r="12" />
@@ -97,9 +110,15 @@ class IdsWizard extends mix(IdsElement).with(IdsEventsMixin) {
       // ===================== //
 
       // @ts-ignore
+
+      const labelClassName = clsx(
+        'step-label',
+        isVisitedStep && 'visited',
+        isClickable && 'clickable'
+      );
       const label = stepEl.innerText;
       stepLabelsInnerHtml += (
-        `<a class="step-label${isVisitedStep ? ' visited' : ''}" step-number=${i + 1}>
+        `<a class="${labelClassName}" step-number=${i + 1}>
           <ids-text
             overflow="ellipsis"
             size=18
@@ -153,7 +172,18 @@ class IdsWizard extends mix(IdsElement).with(IdsEventsMixin) {
     }
 
     this.setAttribute('step-number', v);
-    this.render();
+  }
+
+  set clickable(value) {
+    console.log(typeof value === 'string');
+    const isValueTruthy = IdsStringUtils.stringToBool(value);
+
+    console.log('isValueTruthy ->', isValueTruthy);
+    this.setAttribute('clickable', isValueTruthy);
+  }
+
+  get clickable() {
+    return this.getAttribute('clickable');
   }
 
   // @ts-ignore
@@ -168,8 +198,10 @@ class IdsWizard extends mix(IdsElement).with(IdsEventsMixin) {
   attributeChangedCallback(name, oldValue, newValue) {
     if (oldValue !== newValue) {
       switch (name) {
+      case 'clickable':
       case 'step-number': {
         this.shouldUpdateCallbacks = true;
+        this.render();
         break;
       }
       default: break;
@@ -184,12 +216,14 @@ class IdsWizard extends mix(IdsElement).with(IdsEventsMixin) {
       return;
     }
 
+    // stop observing changes before updating DOM
     this.stepObserver.disconnect();
-
-    console.log('updating with new callbacks');
 
     // query through all steps and add click callbacks
     for (let stepNumber = 1; stepNumber <= this.children.length; stepNumber++) {
+      if (!this.isStepClickable(stepNumber)) {
+        continue;
+      }
       const stepMarker = this.shadowRoot.querySelector(
         `.bar-step[step-number="${stepNumber}"]`
       );
