@@ -25,9 +25,9 @@ class IdsWizard extends mix(IdsElement).with(IdsEventsMixin) {
   shouldUpdateCallbacks = true;
 
   stepObserver = new MutationObserver((mutations, observer) => {
-    for (const { type, target } of mutations) {
+    for (const { type } of mutations) {
       // @ts-ignore
-      if (type === 'childList' && target.name === this.name) {
+      if (type === 'childList') {
         this.shouldUpdateCallbacks = true;
         this.render();
       }
