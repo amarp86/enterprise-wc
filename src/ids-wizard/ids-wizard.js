@@ -22,6 +22,8 @@ class IdsWizard extends mix(IdsElement).with(IdsEventsMixin) {
     super();
   }
 
+  shouldUpdateCallbacks = true;
+
   /**
    * Return the properties we handle as getters/setters
    * @returns {Array} The properties in an array
@@ -140,22 +142,52 @@ class IdsWizard extends mix(IdsElement).with(IdsEventsMixin) {
     this.render();
   }
 
+  // @ts-ignore
+
+  /**
+   * Handle Setting changes of the value has changed by calling the getter
+   * in the extending class.
+   * @param  {string} name The property name
+   * @param  {string} oldValue The property old value
+   * @param  {string} newValue The property new value
+   */
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (oldValue !== newValue) {
+      switch (name) {
+      case 'step-number': {
+        this.shouldUpdateCallbacks = true;
+        break;
+      }
+      default: break;
+      }
+    }
+
+    super.attributeChangedCallback(name, oldValue, newValue);
+  }
+
   rendered = () => {
-    this.detachAllEvents();
+    if (!this.shouldUpdateCallbacks) {
+      return;
+    }
 
     // query through all steps and add click callbacks
-    for (let step = 1; step <= this.children.length; step++) {
-      const stepMarker = this.shadowRoot.querySelector(`.bar-step[step-number="${step}"]`);
-      const stepLabel = this.shadowRoot.querySelector(`.step-label[step-number="${step}"]`);
+    for (let stepNumber = 1; stepNumber <= this.children.length; stepNumber++) {
+      const stepMarker = this.shadowRoot.querySelector(
+        `.bar-step[step-number="${stepNumber}"]`
+      );
+      const stepLabel = this.shadowRoot.querySelector(
+        `.step-label[step-number="${stepNumber}"]`
+      );
 
       const onClickStep = () => {
-        this.stepNumber = step;
+        this.stepNumber = `${stepNumber}`;
       };
-      this.offEvent('click.step-marker', stepMarker);
-      this.offEvent('click.step-label', stepLabel);
-      this.onEvent('click.step-marker', stepMarker, onClickStep);
-      this.onEvent('click.step-label', stepLabel, onClickStep);
+
+      this.onEvent(`click.step-marker.${stepNumber}`, stepMarker, onClickStep);
+      this.onEvent(`click.step-label.${stepNumber}`, stepLabel, onClickStep);
     }
+
+    this.shouldUpdateCallbacks = false;
   };
 }
 

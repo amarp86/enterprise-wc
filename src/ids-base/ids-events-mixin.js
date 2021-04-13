@@ -27,6 +27,11 @@ const IdsEventsMixin = (superclass) => class extends superclass {
    * @param {object} options Additional event settings (passive, once, passive ect)
    */
   onEvent(eventName, target, callback, options) {
+    // we can only store one of each event name in
+    // map currently, so trigger offEvent if needed
+    if (this.handledEvents.has(eventName)) {
+      this.offEvent(eventName, target, options);
+    }
     target.addEventListener(eventName.split('.')[0], callback, options);
     this.handledEvents.set(eventName, { target, callback, options });
   }
