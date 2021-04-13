@@ -24,6 +24,16 @@ class IdsWizard extends mix(IdsElement).with(IdsEventsMixin) {
 
   shouldUpdateCallbacks = true;
 
+  stepObserver = new MutationObserver((mutations, observer) => {
+    for (const { type, target } of mutations) {
+      // @ts-ignore
+      if (type === 'childList' && target.name === this.name) {
+        this.shouldUpdateCallbacks = true;
+        this.render();
+      }
+    }
+  });
+
   /**
    * Return the properties we handle as getters/setters
    * @returns {Array} The properties in an array
@@ -44,7 +54,7 @@ class IdsWizard extends mix(IdsElement).with(IdsEventsMixin) {
     // lightDOM to create shadowDOM markup
 
     // @ts-ignore
-    const stepIndex = parseInt(this.stepNumber) - 1;
+    const stepIndex = this.stepNumber - 1;
 
     for (const [i, stepEl] of [...this.children].entries()) {
       const isCurrentStep = stepIndex === i;
@@ -118,7 +128,11 @@ class IdsWizard extends mix(IdsElement).with(IdsEventsMixin) {
    */
   get stepNumber() {
     // @ts-ignore
-    return parseInt(this.getAttribute('step-number'));
+    const stepNumber = parseInt(this.getAttribute('step-number'));
+    if (Number.isNaN(stepNumber)) {
+      return -1;
+    }
+    return parseInt(this.getAttribute('step-number')) || 1;
   }
 
   /**
@@ -138,7 +152,7 @@ class IdsWizard extends mix(IdsElement).with(IdsEventsMixin) {
       throw new Error('ids-wizard: step number should be below step-count');
     }
 
-    this.setAttribute('step-number', value);
+    this.setAttribute('step-number', v);
     this.render();
   }
 
@@ -170,6 +184,10 @@ class IdsWizard extends mix(IdsElement).with(IdsEventsMixin) {
       return;
     }
 
+    this.stepObserver.disconnect();
+
+    console.log('updating with new callbacks');
+
     // query through all steps and add click callbacks
     for (let stepNumber = 1; stepNumber <= this.children.length; stepNumber++) {
       const stepMarker = this.shadowRoot.querySelector(
@@ -186,6 +204,14 @@ class IdsWizard extends mix(IdsElement).with(IdsEventsMixin) {
       this.onEvent(`click.step-marker.${stepNumber}`, stepMarker, onClickStep);
       this.onEvent(`click.step-label.${stepNumber}`, stepLabel, onClickStep);
     }
+
+    // set up observer for monitoring if a child element changed
+    // @ts-ignore
+    this.stepObserver.observe(this, {
+      childList: true,
+      attributes: true,
+      subtree: true
+    });
 
     this.shouldUpdateCallbacks = false;
   };
