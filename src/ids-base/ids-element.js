@@ -101,6 +101,8 @@ class IdsElement extends HTMLElement {
 
     // Remove any close hidden element to avoid FOUC
     this.closest('div[role="main"][hidden]')?.removeAttribute('hidden');
+    // @ts-ignore
+    setTimeout(() => { this.rendered?.(); }, 0);
     return this;
   }
 

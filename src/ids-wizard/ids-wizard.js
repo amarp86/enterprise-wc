@@ -2,8 +2,10 @@ import clsx from 'clsx';
 import {
   IdsElement,
   customElement,
-  scss
+  scss,
+  mix
 } from '../ids-base/ids-element';
+import { IdsEventsMixin } from '../ids-base/ids-events-mixin';
 import IdsWizardStep from './ids-wizard-step';
 // @ts-ignore
 import styles from './ids-wizard.scss';
@@ -15,7 +17,11 @@ import styles from './ids-wizard.scss';
  */
 @customElement('ids-wizard')
 @scss(styles)
-class IdsWizard extends IdsElement {
+class IdsWizard extends mix(IdsElement).with(IdsEventsMixin) {
+  constructor() {
+    super();
+  }
+
   /**
    * Return the properties we handle as getters/setters
    * @returns {Array} The properties in an array
@@ -60,7 +66,7 @@ class IdsWizard extends IdsElement {
       );
 
       stepsBarInnerHtml += (
-        `<a class="${markerClassName}"${aHrefAttrib}>
+        `<a class="${markerClassName}"${aHrefAttrib} step-number=${i + 1}>
           <div class="step-node">
             <svg viewBox="0 0 24 24">
               <circle cx="12" cy="12" r="12" />
@@ -81,7 +87,7 @@ class IdsWizard extends IdsElement {
       // @ts-ignore
       const label = stepEl.innerText;
       stepLabelsInnerHtml += (
-        `<a class="step-label${isVisitedStep ? ' visited' : ''}">
+        `<a class="step-label${isVisitedStep ? ' visited' : ''}" step-number=${i + 1}>
           <ids-text
             overflow="ellipsis"
             size=18
@@ -102,15 +108,6 @@ class IdsWizard extends IdsElement {
         </div>
       </div>`
     );
-  }
-
-  rerenderTemplate() {
-    const template = document.createElement('template');
-    const html = this.template();
-    template.innerHTML = html;
-    // @ts-ignore
-    this.shadowRoot.innerHTML = '';
-    this.shadowRoot?.appendChild(template.content.cloneNode(true));
   }
 
   /**
@@ -139,8 +136,27 @@ class IdsWizard extends IdsElement {
       throw new Error('ids-wizard: step number should be below step-count');
     }
 
+    this.setAttribute('step-number', value);
     this.render();
   }
+
+  rendered = () => {
+    this.detachAllEvents();
+
+    // query through all steps and add click callbacks
+    for (let step = 1; step <= this.children.length; step++) {
+      const stepMarker = this.shadowRoot.querySelector(`.bar-step[step-number="${step}"]`);
+      const stepLabel = this.shadowRoot.querySelector(`.step-label[step-number="${step}"]`);
+
+      const onClickStep = () => {
+        this.stepNumber = step;
+      };
+      this.offEvent('click.step-marker', stepMarker);
+      this.offEvent('click.step-label', stepLabel);
+      this.onEvent('click.step-marker', stepMarker, onClickStep);
+      this.onEvent('click.step-label', stepLabel, onClickStep);
+    }
+  };
 }
 
 export { IdsWizardStep };

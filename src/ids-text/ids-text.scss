@@ -23,14 +23,6 @@
   &.bolder {
     @include font-extrabold();
   }
-
-  &.bold {
-    @include font-bold;
-  }
-
-  &.bolder {
-    @include font-extrabold;
-  }
 }
 
 :host(.inline) {
