@@ -8,6 +8,7 @@ import {
 import { IdsEventsMixin } from '../ids-base/ids-events-mixin';
 import { IdsStringUtils } from '../ids-base/ids-string-utils';
 import IdsWizardStep from './ids-wizard-step';
+import IdsText from '../ids-text/ids-text';
 // @ts-ignore
 import styles from './ids-wizard.scss';
 
@@ -116,7 +117,7 @@ class IdsWizard extends mix(IdsElement).with(IdsEventsMixin) {
         isVisitedStep && 'visited',
         isClickable && 'clickable'
       );
-      const label = stepEl.innerText;
+      const label = stepEl.textContent;
       stepLabelsInnerHtml += (
         `<a class="${labelClassName}" step-number=${i + 1}>
           <ids-text
@@ -175,10 +176,7 @@ class IdsWizard extends mix(IdsElement).with(IdsEventsMixin) {
   }
 
   set clickable(value) {
-    console.log(typeof value === 'string');
     const isValueTruthy = IdsStringUtils.stringToBool(value);
-
-    console.log('isValueTruthy ->', isValueTruthy);
     this.setAttribute('clickable', isValueTruthy);
   }
 

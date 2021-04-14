@@ -3,6 +3,7 @@ import {
   customElement,
   scss
 } from '../ids-base/ids-element';
+import IdsText from '../ids-text/ids-text';
 // @ts-ignore
 import styles from './ids-wizard.scss';
 
