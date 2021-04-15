@@ -987,7 +987,7 @@ Will make a pager type for this.
 
 **Wizard** (ids-wizard)
  - [ ] Docs
- - [ ] 100% Test Coverage
+ - [X] 100% Test Coverage
  - [ ] Feature Parity with 4.x
  - [ ] Upgrade Docs in Changelog
  - [ ] Typings

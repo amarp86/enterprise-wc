@@ -17,7 +17,6 @@ import styles from './ids-wizard.scss';
  * a link with a similar label when constructing them
  */
 const hrefsAssignedSet = new Set();
-const hrefMap = new Map();
 
 /**
  * IDS Wizard Component
@@ -170,10 +169,12 @@ class IdsWizard extends mix(IdsElement).with(IdsEventsMixin) {
   get stepNumber() {
     // @ts-ignore
     const stepNumber = parseInt(this.getAttribute('step-number'));
+
     if (Number.isNaN(stepNumber)) {
       return -1;
     }
-    return parseInt(this.getAttribute('step-number')) || 1;
+
+    return stepNumber;
   }
 
   /**
