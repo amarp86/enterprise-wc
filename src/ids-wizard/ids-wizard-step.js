@@ -3,7 +3,6 @@ import {
   customElement,
   scss
 } from '../ids-base/ids-element';
-import IdsText from '../ids-text/ids-text';
 // @ts-ignore
 import styles from './ids-wizard.scss';
 
@@ -20,18 +19,6 @@ import styles from './ids-wizard.scss';
  */
 @customElement('ids-wizard-step')
 @scss(styles)
-class IdsWizardStep extends IdsElement {
-  static get properties() {
-    return ['current-step'];
-  }
-
-  get currentStep() {
-    return Boolean(this.querySelector('[current-step]') === '');
-  }
-
-  set currentStep(v) {
-    return v === '';
-  }
-}
+class IdsWizardStep extends IdsElement {}
 
 export default IdsWizardStep;
