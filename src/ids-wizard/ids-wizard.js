@@ -95,7 +95,7 @@ class IdsWizard extends mix(IdsElement).with(IdsEventsMixin) {
       // ===================== //
 
       const markerClassName = clsx(
-        'bar-step',
+        'step-marker',
         isCurrentStep && 'current',
         isVisitedStep && 'visited',
         isClickable && 'clickable'
@@ -106,15 +106,16 @@ class IdsWizard extends mix(IdsElement).with(IdsEventsMixin) {
       );
 
       const hrefUrl = this.hrefUrls?.[i];
-      const hrefAttribHtml = !isClickable ? '' : ` href="#${hrefUrl}"`;
+      let anchorAttribsHtml = `name="#${label}" aria-label="${label}"`;
+      anchorAttribsHtml += !isClickable ? '' : ` href="#${hrefUrl}"`;
 
       stepsBarInnerHtml += (
         `<a
           class="${markerClassName}"
           step-number=${i + 1}
-          name="#${label}"${hrefAttribHtml}
+          ${anchorAttribsHtml}
         >
-          <div class="step-node">
+          <div class="step-marker-node">
             <svg viewBox="0 0 24 24">
               <circle cx="12" cy="12" r="12" />
             </svg>
@@ -139,7 +140,10 @@ class IdsWizard extends mix(IdsElement).with(IdsEventsMixin) {
         isClickable && 'clickable'
       );
       stepLabelsInnerHtml += (
-        `<a class="${labelClassName}" step-number=${i + 1}>
+        `<a
+          class="${labelClassName}"
+          step-number=${i + 1}
+          ${anchorAttribsHtml}>
           <ids-text
             overflow="ellipsis"
             size=18
@@ -246,7 +250,7 @@ class IdsWizard extends mix(IdsElement).with(IdsEventsMixin) {
         continue;
       }
       const stepMarker = this.shadowRoot.querySelector(
-        `.bar-step[step-number="${stepNumber}"]`
+        `.step-marker[step-number="${stepNumber}"]`
       );
       const stepLabel = this.shadowRoot.querySelector(
         `.step-label[step-number="${stepNumber}"]`
@@ -256,7 +260,7 @@ class IdsWizard extends mix(IdsElement).with(IdsEventsMixin) {
         this.stepNumber = `${stepNumber}`;
       };
 
-      this.onEvent(`click.bar-step.${stepNumber}`, stepMarker, onClickStep);
+      this.onEvent(`click.step-marker.${stepNumber}`, stepMarker, onClickStep);
       this.onEvent(`click.step-label.${stepNumber}`, stepLabel, onClickStep);
     }
 

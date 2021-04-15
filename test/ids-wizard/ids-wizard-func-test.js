@@ -81,7 +81,7 @@ describe('IdsWizard Tests', () => {
     const expectedClickableCount = elem.children.length - 1;
 
     const clickableMarkerCount = elem.shadowRoot.querySelectorAll(
-      '.bar-step.clickable'
+      '.step-marker.clickable'
     ).length;
 
     const clickableLabelCount = elem.shadowRoot.querySelectorAll(
@@ -142,7 +142,7 @@ describe('IdsWizard Tests', () => {
   it('on clickable wizard: clicks non-selected step, and the step number changes', async () => {
     const stepNumber = 2;
     elem.clickable = true;
-    const marker = elem.shadowRoot.querySelector(`.bar-step[step-number="${stepNumber}"]`);
+    const marker = elem.shadowRoot.querySelector(`.step-marker[step-number="${stepNumber}"]`);
     marker.click();
 
     expect(elem.stepNumber).toEqual(2);
