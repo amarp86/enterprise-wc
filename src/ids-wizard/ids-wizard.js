@@ -7,10 +7,17 @@ import {
 } from '../ids-base/ids-element';
 import { IdsEventsMixin } from '../ids-base/ids-events-mixin';
 import { IdsStringUtils } from '../ids-base/ids-string-utils';
-import IdsWizardStep from './ids-wizard-step';
 import IdsText from '../ids-text/ids-text';
 // @ts-ignore
 import styles from './ids-wizard.scss';
+
+/**
+ * maps objects to href sets;
+ * this lets us know that we shouldn't re-use
+ * a link with a similar label when constructing them
+ */
+const hrefsAssignedSet = new Set();
+const hrefMap = new Map();
 
 /**
  * IDS Wizard Component
@@ -22,15 +29,22 @@ import styles from './ids-wizard.scss';
 class IdsWizard extends mix(IdsElement).with(IdsEventsMixin) {
   constructor() {
     super();
+    this.updateHrefUrls();
   }
 
   shouldUpdateCallbacks = true;
+
+  /**
+   * stored to prevent re-calling encodeUri(label)
+   */
+  hrefUrls = [];
 
   stepObserver = new MutationObserver((mutations) => {
     for (const { type } of mutations) {
       // @ts-ignore
       if (type === 'childList') {
         this.shouldUpdateCallbacks = true;
+        this.updateHrefUrls();
         this.render();
       }
     }
@@ -75,6 +89,7 @@ class IdsWizard extends mix(IdsElement).with(IdsEventsMixin) {
       const isVisitedStep = i <= stepIndex;
 
       const isClickable = this.isStepClickable(i + 1);
+      const label = stepEl.textContent;
 
       // --------------------- //
       // construct bar steps   //
@@ -91,8 +106,15 @@ class IdsWizard extends mix(IdsElement).with(IdsEventsMixin) {
         `<div class="path-segment${stepIndex <= i ? '' : ' visited'}"></div>`
       );
 
+      const hrefUrl = this.hrefUrls?.[i];
+      const hrefAttribHtml = !isClickable ? '' : ` href="#${hrefUrl}"`;
+
       stepsBarInnerHtml += (
-        `<a class="${markerClassName}" step-number=${i + 1}>
+        `<a
+          class="${markerClassName}"
+          step-number=${i + 1}
+          name="#${label}"${hrefAttribHtml}
+        >
           <div class="step-node">
             <svg viewBox="0 0 24 24">
               <circle cx="12" cy="12" r="12" />
@@ -117,7 +139,6 @@ class IdsWizard extends mix(IdsElement).with(IdsEventsMixin) {
         isVisitedStep && 'visited',
         isClickable && 'clickable'
       );
-      const label = stepEl.textContent;
       stepLabelsInnerHtml += (
         `<a class="${labelClassName}" step-number=${i + 1}>
           <ids-text
@@ -166,7 +187,7 @@ class IdsWizard extends mix(IdsElement).with(IdsEventsMixin) {
 
     // @ts-ignore
     const v = parseInt(value);
-    if (v < 0) {
+    if (v <= 0) {
       throw new Error('ids-wizard: step number should be > 0');
     } else if (v > this.children.length) {
       throw new Error('ids-wizard: step number should be below step-count');
@@ -187,13 +208,14 @@ class IdsWizard extends mix(IdsElement).with(IdsEventsMixin) {
   // @ts-ignore
 
   /**
-   * Handle Setting changes of the value has changed by calling the getter
-   * in the extending class.
+   * Handle Setting changes of observed properties
    * @param  {string} name The property name
    * @param  {string} oldValue The property old value
    * @param  {string} newValue The property new value
    */
   attributeChangedCallback(name, oldValue, newValue) {
+    super.attributeChangedCallback(name, oldValue, newValue);
+
     if (oldValue !== newValue) {
       switch (name) {
       case 'clickable':
@@ -202,14 +224,14 @@ class IdsWizard extends mix(IdsElement).with(IdsEventsMixin) {
         this.render();
         break;
       }
+      /* istanbul ignore next */
       default: break;
       }
     }
-
-    super.attributeChangedCallback(name, oldValue, newValue);
   }
 
   rendered = () => {
+    /* istanbul ignore next */
     if (!this.shouldUpdateCallbacks) {
       return;
     }
@@ -233,7 +255,7 @@ class IdsWizard extends mix(IdsElement).with(IdsEventsMixin) {
         this.stepNumber = `${stepNumber}`;
       };
 
-      this.onEvent(`click.step-marker.${stepNumber}`, stepMarker, onClickStep);
+      this.onEvent(`click.bar-step.${stepNumber}`, stepMarker, onClickStep);
       this.onEvent(`click.step-label.${stepNumber}`, stepLabel, onClickStep);
     }
 
@@ -247,7 +269,37 @@ class IdsWizard extends mix(IdsElement).with(IdsEventsMixin) {
 
     this.shouldUpdateCallbacks = false;
   };
+
+  /**
+   * updates hrefUrls at select points
+   * so we don't need to recalculate
+   * when setting clickable or step number
+   * again; also allows us to easily run
+   * calculations to use unique-but-meaningful
+   * links
+   */
+  updateHrefUrls() {
+    this.hrefUrls = [...this.children].map((el, i) => {
+      let urlHash = encodeURI(el.textContent);
+      let collisionCount;
+
+      // if an href was already used, and it isn't
+      // used by this component's children,
+      // then increase the number in href hash
+
+      while (
+        (this.hrefUrls?.[i] !== urlHash)
+        && hrefsAssignedSet.has?.(urlHash)
+      ) {
+        collisionCount = collisionCount ? (collisionCount + 1) : 1;
+        urlHash = `${encodeURI(el.textContent)}-${collisionCount}`;
+      }
+
+      hrefsAssignedSet.add(urlHash);
+
+      return urlHash;
+    });
+  }
 }
 
-export { IdsWizardStep };
 export default IdsWizard;

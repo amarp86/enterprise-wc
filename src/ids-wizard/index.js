@@ -1,5 +1,2 @@
-import IdsWizard from './ids-wizard';
-import IdsWizardStep from './ids-wizard-step';
-
-export { IdsWizardStep };
-export default IdsWizard;
+export { default } from './ids-wizard';
+export { default as IdsWizardStep } from './ids-wizard-step';
