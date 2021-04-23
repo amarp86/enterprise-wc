@@ -1,0 +1,49 @@
+#rating {
+  align-items: center;
+  display: inline-flex;
+  flex-direction: row;
+}
+
+.rating-item {
+  cursor: pointer;
+  font-size: 25px;
+  position: relative;
+}
+
+.rating-outer {
+  color: #333;
+  cursor: pointer;
+  display: block;
+}
+
+.rating-outer:hover {
+  color: orange;
+}
+
+.rating-inner {
+  color: orange;
+  cursor: pointer;
+  display: none;
+}
+
+.active .rating-outer {
+  display: none;
+}
+
+.active .rating-inner {
+  cursor: pointer;
+  display: block;
+}
+
+.star-half {
+  cursor: pointer;
+  display: none;
+}
+
+.is-half .star-filled {
+  display: none;
+}
+
+.is-half .star-half {
+  display: block;
+}

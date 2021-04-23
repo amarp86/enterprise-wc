@@ -32,6 +32,7 @@ import IdsColorpicker from '../src/ids-colorpicker/ids-colorpicker';
 import IdsColor from '../src/ids-color/ids-color';
 import IdsContainer from '../src/ids-container/ids-container';
 import IdsThemeSwitcher from '../src/ids-theme-switcher/ids-theme-switcher';
+import IdsRating from '../src/ids-rating/ids-rating';
 
 // Import Example Code
 
