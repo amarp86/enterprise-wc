@@ -83,3 +83,4 @@ const IdsEventsMixin = (superclass) => class extends superclass {
 };
 
 export { IdsEventsMixin };
+export default IdsEventsMixin;
