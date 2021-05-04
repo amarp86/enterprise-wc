@@ -105,7 +105,13 @@ class IdsElement extends HTMLElement {
     // Give implementing-component an opportunity to react to
     // new render and replacement of container node
 
-    this.rendered?.();
+    // note that it must run on the next paint to be sure rendered()
+    // was binded to the component reliably; otherwise it doesn't
+    // run every time on the first paint due to inheritance
+
+    if (this.rendered) {
+      window.requestAnimationFrame(() => { this.rendered(); });
+    }
 
     return this;
   }
