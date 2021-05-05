@@ -89,7 +89,6 @@ export const props = {
   STEP_NUMBER: 'step-number',
   SUBMENU: 'submenu',
   TABBABLE: 'tabbable',
-  TAB_ID: 'tab-id',
   TABINDEX: 'tabindex',
   TARGET: 'target',
   TRIGGER: 'trigger',
