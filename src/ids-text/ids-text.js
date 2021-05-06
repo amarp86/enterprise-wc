@@ -11,7 +11,6 @@ import { IdsThemeMixin } from '../ids-base/ids-theme-mixin';
 import { IdsEventsMixin } from '../ids-base/ids-events-mixin';
 import { IdsStringUtils as stringUtils } from '../ids-base/ids-string-utils';
 
-// @ts-ignore
 import styles from './ids-text.scss';
 
 const fontSizes = ['xs', 'sm', 'base', 'lg', 'xl', 10, 12, 14, 16, 20, 24, 28, 32, 40, 48, 60, 72];
@@ -52,7 +51,8 @@ class IdsText extends mix(IdsElement).with(IdsEventsMixin, IdsThemeMixin) {
       props.LABEL,
       props.FONT_WEIGHT,
       props.AUDIBLE,
-      props.OVERFLOW
+      props.OVERFLOW,
+      props.COLOR
     ];
   }
 
@@ -65,6 +65,7 @@ class IdsText extends mix(IdsElement).with(IdsEventsMixin, IdsThemeMixin) {
     const tag = this.type || 'span';
 
     let classList = 'ids-text';
+    classList += this.color === 'unset' ? ' ids-text-color-unset' : '';
     classList += (this.overflow === 'ellipsis') ? ' ellipsis' : '';
     classList += ((this.audible)) ? ' audible' : '';
     classList += this.fontSize ? ` ids-text-${this.fontSize}` : '';
@@ -112,9 +113,7 @@ class IdsText extends mix(IdsElement).with(IdsEventsMixin, IdsThemeMixin) {
     this.container?.classList.remove(...fontWeightClasses);
 
     if (hasValue) {
-      // @ts-ignore
       this.setAttribute(props.FONT_WEIGHT, value);
-      // @ts-ignore
       this.container?.classList.add(value);
       return;
     }
@@ -143,6 +142,26 @@ class IdsText extends mix(IdsElement).with(IdsEventsMixin, IdsThemeMixin) {
   get type() { return this.getAttribute(props.TYPE); }
 
   /**
+   * If set to "unset", color can be controlled by parent container
+   * @param {string | null} value  "unset" or undefined/null
+   */
+  set color(value) {
+    if (value === 'unset') {
+      this.setAttribute(props.COLOR, value);
+      this.container.classList.add('ids-text-color-unset');
+    } else {
+      this.removeAttribute(props.COLOR);
+      this.container.classList.remove('ids-text-color-unset');
+    }
+
+    this.render();
+  }
+
+  get color() {
+    return this.getAttribute(props.COLOR);
+  }
+
+  /**
    * Set `audible` string (screen reader only text)
    * @param {string | null} value The `audible` attribute
    */
@@ -151,7 +170,6 @@ class IdsText extends mix(IdsElement).with(IdsEventsMixin, IdsThemeMixin) {
 
     if (isValueTruthy && this.container && !this.container?.classList.contains('audible')) {
       this.container.classList.add('audible');
-      // @ts-ignore
       this.setAttribute(props.AUDIBLE, value);
     }
 

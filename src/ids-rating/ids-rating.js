@@ -2,7 +2,8 @@ import {
   IdsElement,
   customElement,
   scss,
-  mix
+  mix,
+  prop
 } from '../ids-base/ids-element';
 
 import { IdsEventsMixin } from '../ids-base/ids-events-mixin';
@@ -27,128 +28,172 @@ class IdsRating extends mix(IdsElement).with(IdsEventsMixin, IdsKeyboardMixin) {
      super();
    }
 
-    ratingsConfig = {
-      ratingsAttr: {
-        star: this.getAttribute('stars'),
-        active: this.getAttribute('active'),
-        color: this.getAttribute('color'),
-        size: this.getAttribute('size'),
-        value: this.getAttribute('value'),
-        readonly: this.getAttribute('readonly'),
-        clickable: this.getAttribute('clickable'),
-        compact: this.getAttribute('compact')
+    connectedCallback() {
+      if(this.getAttribute('readonly') === 'false') {
+        this.toggleStars();
+      } else {
+        this.updateHalfStar(this.ratingArr);
       }
     }
 
-    connectedCallback() {
-      this.buildDOM();
-    }
+    ratingContainer = this.shadowRoot.querySelector('#rating');
+    ratingArr = [...this.ratingContainer.children];
 
     /**
      * Create the Template for the contents
      * @returns {string} The template
      */
     template() {
-      return `<div id="rating"></div>`;
-    }
-
-    buildDOM() {
-      const ratingsContainer = this.shadowRoot.querySelector('#rating');
-      this.ratingBuilder(ratingsContainer);
-      if (this.ratingsConfig.ratingsAttr.readonly) {
-        this.updateDecimalNum(ratingsContainer.children);
-      } else {
-        this.addRemoveClass();
+      const stars = this.hasAttribute('stars') ? this.getAttribute('stars') : this.setAttribute('stars', '5');
+      const size = this.hasAttribute('size') ? this.getAttribute('size') : this.setAttribute('size', 'large');
+      const value = this.hasAttribute('value') ? this.getAttribute('value') : this.setAttribute('value', '0');
+      const readonly = this.hasAttribute('readonly') ? this.getAttribute('readonly') : this.setAttribute('readonly', 'false');
+      let html = '<div id="rating">';
+      for(let i = 0; i < stars; i++) {
+       html += `<ids-icon class="star star-${i}" aria-label="Star-${i}" role-"button" icon="star-outlined" tabindex="0" size="${size}"></ids-icon>`;
       }
+      html += '</div>';
+      return html;
     }
 
     /**
-    * @param {HTMLDivElement} element
-    * @param {number} index
+    * @returns {Array<string>} this component's observable properties
     */
-    buildRatingStar(element, index) {
-      const ratingItem = window.document.createElement('div');
-      ratingItem.classList.add('rating-item');
-      ratingItem.setAttribute('item-index', `item-${index}`);
-      const ratingOuter = window.document.createElement('div');
-      ratingOuter.classList.add('rating-outer');
-      const starOutlined = `<ids-icon class="star-outlined" icon="star-outlined" size="large"></ids-icon>`;
-      ratingOuter.innerHTML = starOutlined;
-      ratingItem.appendChild(ratingOuter);
-      const div = window.document.createElement('div');
-      div.classList.add('rating-inner');
-      const starFilled = `<ids-icon class="star-filled inner-${index}" icon="star-filled" size="large"></ids-icon>`;
-      const starHalf = `<ids-icon class="star-half inner-${index}" icon="star-half" size="large"></ids-icon>`;
-      div.innerHTML = starFilled;
-      div.innerHTML += starHalf;
-      ratingItem.appendChild(div);
-      element.appendChild(ratingItem);
+    static get properties() {
+      return ['value', 'stars', 'readonly', 'clickable', 'compact', 'size'];
     }
 
-    /**
-    * @param {HTMLDivElement} el
-    */
-    ratingBuilder(el) {
-      const amount = this.ratingsConfig.ratingsAttr.star;
-      for (let i = 0; i < amount; i++) {
-        this.buildRatingStar(el, i);
+    set value(val) {
+      if(val && this.getAttribute('readonly') === 'false') {
+        this.ratingArr.forEach((element) => {
+          element.setAttribute('icon', 'star-outlined');
+          element.classList.remove('active');
+        });
+        let valueArray = this.ratingArr
+        let starArray = valueArray.slice(0, parseInt(val))
+        starArray.forEach((element) => {
+          element.setAttribute('icon', 'star-filled')
+          element.classList.add('active');
+        });
+        this.setAttribute('value', val.toString());
+      }
+
+      if(val && this.getAttribute('readonly') === 'true') {
+        this.ratingArr.forEach((element) => {
+          element.setAttribute('icon', 'star-outlined');
+          element.classList.remove('active');
+        });
+        this.updateHalfStar(this.ratingArr);
       }
     }
 
-    addRemoveClass() {
-      const ratingContainer = this.shadowRoot.querySelector('#rating');
-      const ratingArr = [...ratingContainer.children];
-      this.onEvent('click', ratingContainer, (/** @type {{ target: any; }} */ e) => {
-        const activeElements = ratingArr.filter((item) => item.classList.contains('active'));
-        let action = 'add';
-        for (const ratingOption of ratingArr) {
-          const outerCondition = ratingOption.children[0].children[0] === e.target;
-          const innerCondition = ratingOption.children[1].children[0] === e.target;
-          const clickCondition = (outerCondition || innerCondition);
-          ratingOption.classList[action]('active');
-          if (clickCondition) {
-            action = 'remove';
-          }
+    get value() {
+      return this.getAttribute('value');
+    }
+
+    set stars(num) {
+      if(num) {
+        console.log(num)
+        this.render();
+        this.toggleStars();
+        this.setAttribute('stars', num.toString());
+      }
+    }
+
+    get stars() {
+      return this.getAttribute('stars');
+    }
+
+    set readonly(ro) {
+      if(ro && this.getAttribute('readonly') === 'true'){
+        this.offEvent('click', this.ratingContainer);
+        this.updateHalfStar(this.ratingArr);
+        this.setAttribute('readonly', ro.toString());
+      }
+
+      if(ro && this.getAttribute('readonly') === 'false') {
+        this.toggleStars();
+        this.setAttribute('readonly', ro.toString());
+      }
+    }
+
+    get readonly() {
+      return this.getAttribute('readonly');
+    }
+
+    set clickable(cl) {
+      if(c) {
+        this.setAttribute('clickable', cl.toString());
+      }
+    }
+
+    get clickable() {
+      return this.getAttribute('clickable');
+    }
+
+    set compact(com) {
+      if(com) {
+        this.setAttribute('compact', com.toString());
+      }
+    }
+
+    get compact() {
+      return this.getAttribute('compact');
+    }
+
+    set size(s) {
+      if(s) {
+        this.ratingArr.forEach((element) => element.setAttribute('size', s.toString()));
+        this.setAttribute('size', s.toString());
+      }
+    }
+
+    get size() {
+      return this.getAttribute('size')
+    }
+
+    toggleStars() {
+      this.onEvent('click', this.ratingContainer, (/** @type {{ target: any; }} */ e) => this.updateStars(e));
+    }
+
+    updateStars(event) {
+      const activeElements = this.ratingArr.filter((item) => item.classList.contains('active'));
+      let attrName = 'star-filled';
+      let action = 'add';
+      for (const ratingOption of this.ratingArr) {
+        ratingOption.classList[action]('active');
+        ratingOption.setAttribute('icon', attrName);
+        if(ratingOption === event.target) {
+          action = 'remove';
+          attrName = 'star-outlined';
         }
-        if (activeElements.length === 1 && e.target.classList.contains('inner-0')) {
+        if(activeElements.length === 1 && event.target.classList.contains('star-0')) {
           activeElements[0].classList.remove('active');
-          this.setAttribute('value', 0);
+          activeElements[0].setAttribute('icon', 'star-outlined');
         }
-        this.udpateValue();
-      });
-    }
-
-    /**
-    * @param {Array} arr
-    */
-    updateWholeNum(arr) {
-      const activeArr = [...arr].filter((el) => el.classList.contains('active'));
-      this.ratingsConfig.ratingsAttr.value = this.setAttribute('value', activeArr.length);
-    }
-
-    /**
-    * @param {Array} arr
-    */
-    updateDecimalNum(arr) {
-      const ratingChildren = [...arr];
-      const value = this.ratingsConfig.ratingsAttr.value;
-      const roundValue = Math.round(value);
-      for (let i = 0; i < roundValue; i++) {
-        ratingChildren[i].classList.add('active');
       }
-      if (value < roundValue) {
-        const activeArr = ratingChildren.filter((act) => act.classList.contains('active'));
+      this.updateValue(this.ratingArr);
+    }
+    
+    updateValue(arr) {
+      const val = [...arr];
+      const value = val.filter((el) => el.classList.contains('active'));
+      this.setAttribute('value', value.length);
+    }
+
+    updateHalfStar(arr) {
+      const value = this.getAttribute('value');
+      const roundValue = Math.round(value)
+      for(let i = 0; i < roundValue; i++) {
+        console.log(i)
+        arr[i].classList.add('active');
+        arr[i].setAttribute('icon', 'star-filled')
+      }
+      if(value < roundValue) {
+        const activeArr = arr.filter((act) => act.classList.contains('active'));
         const lastItem = activeArr[activeArr.length - 1];
         lastItem.classList.add('is-half');
-      }
-    }
-
-    udpateValue() {
-      const ratingValue = Number(this.getAttribute('value'));
-      const isWhole = Number.isInteger(ratingValue);
-      const ratingChildren = this.shadowRoot.querySelector('#rating').childNodes;
-      if (isWhole) {
-        this.updateWholeNum(ratingChildren);
+        lastItem.setAttribute('icon', 'star-half')
       }
     }
  }

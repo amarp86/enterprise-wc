@@ -1,6 +1,7 @@
 // Ids is a JavaScript project, but we define TypeScript declarations so we can
 // confirm our code is type safe, and to support TypeScript users.
 
+/** A segment of text with standardized settings, theming and fonts */
 export default class IdsText extends HTMLElement {
   /** Set the type of element it is (h1-h6, span (default)) */
   type: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'span' | string | null;
@@ -26,4 +27,7 @@ export default class IdsText extends HTMLElement {
 
   /** Set the theme version */
   version: 'new' | 'classic' | string;
+
+  /** If set to "unset", allows parent to color text */
+  color: 'unset' | null;
 }
