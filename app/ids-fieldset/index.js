@@ -1,1 +1,1 @@
-import IdsHyperlink from '../../src/ids-hyperlink/ids-hyperlink';
+import IdsFieldset from '../../src/ids-fieldset/ids-fieldset';
